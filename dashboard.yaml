@@ -1,0 +1,345 @@
+# Starline glass Home dashboard. Needs: Mushroom, card-mod, button-card (Marketplace / HACS). See README.
+title: Home
+views:
+- title: Home
+  path: home
+  icon: mdi:home
+  type: sections
+  max_columns: 3
+  background: fixed radial-gradient(1100px 700px at 15% 0%,#2450c8 0%,transparent 60%),radial-gradient(900px 700px at 100% 100%,#0f8a78 0%,transparent 55%),#0a1030
+  sections:
+  - type: grid
+    column_span: 3
+    cards:
+    - type: custom:mushroom-chips-card
+      alignment: start
+      grid_options:
+        columns: full
+      chips:
+      - type: template
+        entity: alarm_control_panel.home_alarm
+        icon: mdi:shield-home
+        tap_action:
+          action: more-info
+        icon_color: '{{ ''red'' if is_state(''alarm_control_panel.home_alarm'',''triggered'') else ''green'' if is_state(''alarm_control_panel.home_alarm'',''armed_away'') else ''grey'' }}'
+        content: Security · {{ states('alarm_control_panel.home_alarm')|replace('_',' ')|title }}
+      - type: template
+        icon: mdi:flash
+        icon_color: yellow
+        content: '{{ (states(''sensor.desk_power'')|float(0)+states(''sensor.fan_power'')|float(0)+states(''sensor.server_power'')|float(0))|round(0) }} W now'
+      - type: template
+        icon: mdi:thermometer
+        icon_color: green
+        content: Bedroom {{ states('sensor.bedroom_temperature')|float(0)|round(1) }}°C
+      - type: template
+        icon: mdi:update
+        icon_color: '{{ ''orange'' if states.update|selectattr(''state'',''eq'',''on'')|list|count>0 else ''grey'' }}'
+        content: '{{ states.update|selectattr(''state'',''eq'',''on'')|list|count }} updates'
+        tap_action:
+          action: navigate
+          navigation_path: /config/updates
+  - type: grid
+    column_span: 2
+    cards:
+    - type: horizontal-stack
+      grid_options:
+        columns: full
+      card_mod:
+        style: '#root{display:grid !important;grid-template-columns:3fr 1fr;gap:14px;align-items:start;}'
+      cards:
+      - type: vertical-stack
+        cards:
+        - type: conditional
+          conditions:
+          - condition: state
+            entity: input_select.home_camera
+            state: Camera 1
+          card:
+            type: picture-entity
+            entity: camera.camera_1
+            camera_view: auto
+            show_state: false
+            show_name: false
+            aspect_ratio: 4x3
+            card_mod:
+              style: ha-card{border-radius:18px;overflow:hidden;border:1px solid rgba(255,255,255,.18);}
+        - type: conditional
+          conditions:
+          - condition: state
+            entity: input_select.home_camera
+            state: Camera 2
+          card:
+            type: picture-entity
+            entity: camera.camera_2
+            camera_view: auto
+            show_state: false
+            show_name: false
+            aspect_ratio: 4x3
+            card_mod:
+              style: ha-card{border-radius:18px;overflow:hidden;border:1px solid rgba(255,255,255,.18);}
+        - type: conditional
+          conditions:
+          - condition: state
+            entity: input_select.home_camera
+            state: Camera 3
+          card:
+            type: picture-entity
+            entity: camera.camera_3
+            camera_view: auto
+            show_state: false
+            show_name: false
+            aspect_ratio: 4x3
+            card_mod:
+              style: ha-card{border-radius:18px;overflow:hidden;border:1px solid rgba(255,255,255,.18);}
+      - type: vertical-stack
+        cards:
+        - type: custom:mushroom-template-card
+          primary: Camera 1
+          icon: mdi:doorbell-video
+          fill_container: true
+          icon_color: '{{ ''white'' if is_state(''input_select.home_camera'',''Camera 1'') else ''grey'' }}'
+          tap_action:
+            action: perform-action
+            perform_action: input_select.select_option
+            target:
+              entity_id: input_select.home_camera
+            data:
+              option: Camera 1
+          card_mod:
+            style: ha-card{border-radius:16px;border:1px solid rgba(255,255,255,.14);{% if is_state('input_select.home_camera','Camera 1') %}background:rgba(255,255,255,.28);box-shadow:0 0 16px rgba(120,180,255,.4);{% else %}background:rgba(255,255,255,.07);{% endif %}}
+        - type: custom:mushroom-template-card
+          primary: Camera 2
+          icon: mdi:road-variant
+          fill_container: true
+          icon_color: '{{ ''white'' if is_state(''input_select.home_camera'',''Camera 2'') else ''grey'' }}'
+          tap_action:
+            action: perform-action
+            perform_action: input_select.select_option
+            target:
+              entity_id: input_select.home_camera
+            data:
+              option: Camera 2
+          card_mod:
+            style: ha-card{border-radius:16px;border:1px solid rgba(255,255,255,.14);{% if is_state('input_select.home_camera','Camera 2') %}background:rgba(255,255,255,.28);box-shadow:0 0 16px rgba(120,180,255,.4);{% else %}background:rgba(255,255,255,.07);{% endif %}}
+        - type: custom:mushroom-template-card
+          primary: Camera 3
+          icon: mdi:sofa
+          fill_container: true
+          icon_color: '{{ ''white'' if is_state(''input_select.home_camera'',''Camera 3'') else ''grey'' }}'
+          tap_action:
+            action: perform-action
+            perform_action: input_select.select_option
+            target:
+              entity_id: input_select.home_camera
+            data:
+              option: Camera 3
+          card_mod:
+            style: ha-card{border-radius:16px;border:1px solid rgba(255,255,255,.14);{% if is_state('input_select.home_camera','Camera 3') %}background:rgba(255,255,255,.28);box-shadow:0 0 16px rgba(120,180,255,.4);{% else %}background:rgba(255,255,255,.07);{% endif %}}
+  - type: grid
+    cards:
+    - type: custom:button-card
+      entity: sensor.time
+      show_icon: false
+      show_state: false
+      show_name: false
+      grid_options:
+        columns: full
+      custom_fields:
+        time: '[[[ return states[''sensor.time''].state; ]]]'
+        date: '[[[ return new Date(states[''sensor.date''].state+''T12:00:00'').toLocaleDateString(''en-GB'',{weekday:''long'',day:''numeric'',month:''long''}); ]]]'
+      styles:
+        card:
+        - background: rgba(255,255,255,.08)
+        - backdrop-filter: blur(14px)
+        - border: 1px solid rgba(255,255,255,.16)
+        - border-radius: 22px
+        - padding: 14px 8px
+        grid:
+        - grid-template-areas: '"time" "date"'
+        - text-align: center
+        custom_fields:
+          time:
+          - font-size: 3rem
+          - font-weight: '700'
+          date:
+          - font-size: 1rem
+          - opacity: '.9'
+    - type: weather-forecast
+      entity: weather.forecast_home
+      forecast_type: daily
+      card_mod:
+        style: ha-card{background:rgba(255,255,255,.08);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.16);border-radius:22px;box-shadow:0 8px 30px rgba(0,0,0,.25);}
+  - type: grid
+    column_span: 2
+    cards:
+    - type: heading
+      heading: Quick actions
+      icon: mdi:flash
+    - type: grid
+      columns: 4
+      square: false
+      grid_options:
+        columns: full
+      cards:
+      - type: custom:mushroom-template-card
+        primary: Good Morning
+        icon: mdi:weather-sunset-up
+        icon_color: amber
+        layout: vertical
+        fill_container: true
+        tap_action:
+          action: perform-action
+          perform_action: script.turn_on
+          target:
+            entity_id: script.good_morning
+        card_mod:
+          style: ha-card{background:rgba(255,255,255,.07);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.14);border-radius:18px;transition:all .2s;} ha-card:active{background:rgba(255,190,80,.35);border-color:rgba(255,190,80,.7);box-shadow:0 0 18px rgba(255,190,80,.45);}
+      - type: custom:mushroom-template-card
+        primary: Good Night
+        icon: mdi:weather-night
+        icon_color: indigo
+        layout: vertical
+        fill_container: true
+        tap_action:
+          action: perform-action
+          perform_action: script.turn_on
+          target:
+            entity_id: script.good_night
+        card_mod:
+          style: ha-card{background:rgba(255,255,255,.07);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.14);border-radius:18px;transition:all .2s;} ha-card:active{background:rgba(110,100,255,.35);border-color:rgba(110,100,255,.7);box-shadow:0 0 18px rgba(110,100,255,.45);}
+      - type: custom:mushroom-template-card
+        primary: Away
+        icon: mdi:exit-run
+        icon_color: red
+        layout: vertical
+        fill_container: true
+        tap_action:
+          action: perform-action
+          perform_action: script.turn_on
+          target:
+            entity_id: script.away_mode
+        card_mod:
+          style: ha-card{background:rgba(255,255,255,.07);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.14);border-radius:18px;transition:all .2s;} ha-card:active{background:rgba(255,100,100,.35);border-color:rgba(255,100,100,.7);box-shadow:0 0 18px rgba(255,100,100,.45);}
+      - type: custom:mushroom-template-card
+        primary: Ambience
+        icon: mdi:palette
+        icon_color: purple
+        layout: vertical
+        fill_container: true
+        tap_action:
+          action: perform-action
+          perform_action: script.turn_on
+          target:
+            entity_id: script.ambience
+        card_mod:
+          style: ha-card{background:rgba(255,255,255,.07);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.14);border-radius:18px;transition:all .2s;} ha-card:active{background:rgba(190,90,255,.35);border-color:rgba(190,90,255,.7);box-shadow:0 0 18px rgba(190,90,255,.45);}
+  - type: grid
+    cards:
+    - type: heading
+      heading: Rooms
+      icon: mdi:home-group
+    - type: custom:mushroom-template-card
+      primary: Lounge
+      icon: mdi:sofa
+      secondary: '{{ expand(["light.lounge_main", "light.lounge_lamp", "media_player.lounge_tv"])|selectattr(''state'',''eq'',''on'')|list|count }} of 3 on'
+      icon_color: '{{ ''blue'' if expand(["light.lounge_main", "light.lounge_lamp", "media_player.lounge_tv"])|selectattr(''state'',''eq'',''on'')|list|count>0 else ''grey'' }}'
+      card_mod:
+        style: ha-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:14px;}
+    - type: custom:mushroom-template-card
+      primary: Bedroom
+      icon: mdi:bed
+      secondary: '{{ expand(["light.bedroom_light", "media_player.bedroom_tv"])|selectattr(''state'',''eq'',''on'')|list|count }} of 2 on'
+      icon_color: '{{ ''purple'' if expand(["light.bedroom_light", "media_player.bedroom_tv"])|selectattr(''state'',''eq'',''on'')|list|count>0 else ''grey'' }}'
+      card_mod:
+        style: ha-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:14px;}
+    - type: custom:mushroom-template-card
+      primary: Kitchen
+      icon: mdi:silverware-fork-knife
+      secondary: '{{ expand(["light.kitchen_light"])|selectattr(''state'',''eq'',''on'')|list|count }} of 1 on'
+      icon_color: '{{ ''green'' if expand(["light.kitchen_light"])|selectattr(''state'',''eq'',''on'')|list|count>0 else ''grey'' }}'
+      card_mod:
+        style: ha-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:14px;}
+    - type: custom:mushroom-template-card
+      primary: Hallway
+      icon: mdi:door
+      secondary: '{{ expand(["light.hallway_light"])|selectattr(''state'',''eq'',''on'')|list|count }} of 1 on'
+      icon_color: '{{ ''orange'' if expand(["light.hallway_light"])|selectattr(''state'',''eq'',''on'')|list|count>0 else ''grey'' }}'
+      card_mod:
+        style: ha-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:14px;}
+  - type: grid
+    column_span: 2
+    cards:
+    - type: heading
+      heading: Lights
+      icon: mdi:lightbulb-group
+    - type: custom:mushroom-light-card
+      entity: light.lounge_main
+      name: Lounge
+      use_light_color: true
+      show_brightness_control: true
+      collapsible_controls: true
+      card_mod:
+        style: ha-card{background:rgba(255,255,255,.07);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.14);border-radius:18px;{% if is_state('light.lounge_main','on') %}background:rgba(255,255,255,.2);border-color:rgba(255,170,60,.55);box-shadow:0 0 18px rgba(255,170,60,.3);{% endif %}}
+    - type: custom:mushroom-light-card
+      entity: light.lounge_lamp
+      name: Lamp
+      use_light_color: true
+      show_brightness_control: true
+      collapsible_controls: true
+      card_mod:
+        style: ha-card{background:rgba(255,255,255,.07);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.14);border-radius:18px;{% if is_state('light.lounge_lamp','on') %}background:rgba(255,255,255,.2);border-color:rgba(255,170,60,.55);box-shadow:0 0 18px rgba(255,170,60,.3);{% endif %}}
+    - type: custom:mushroom-light-card
+      entity: light.bedroom_light
+      name: Bedroom
+      use_light_color: true
+      show_brightness_control: true
+      collapsible_controls: true
+      card_mod:
+        style: ha-card{background:rgba(255,255,255,.07);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.14);border-radius:18px;{% if is_state('light.bedroom_light','on') %}background:rgba(255,255,255,.2);border-color:rgba(255,170,60,.55);box-shadow:0 0 18px rgba(255,170,60,.3);{% endif %}}
+    - type: custom:mushroom-light-card
+      entity: light.kitchen_light
+      name: Kitchen
+      use_light_color: true
+      show_brightness_control: true
+      collapsible_controls: true
+      card_mod:
+        style: ha-card{background:rgba(255,255,255,.07);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.14);border-radius:18px;{% if is_state('light.kitchen_light','on') %}background:rgba(255,255,255,.2);border-color:rgba(255,170,60,.55);box-shadow:0 0 18px rgba(255,170,60,.3);{% endif %}}
+    - type: custom:mushroom-light-card
+      entity: light.hallway_light
+      name: Hallway
+      use_light_color: true
+      show_brightness_control: true
+      collapsible_controls: true
+      card_mod:
+        style: ha-card{background:rgba(255,255,255,.07);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.14);border-radius:18px;{% if is_state('light.hallway_light','on') %}background:rgba(255,255,255,.2);border-color:rgba(255,170,60,.55);box-shadow:0 0 18px rgba(255,170,60,.3);{% endif %}}
+  - type: grid
+    cards:
+    - type: heading
+      heading: Media
+      icon: mdi:television
+    - type: custom:mushroom-media-player-card
+      entity: media_player.lounge_tv
+      name: Lounge TV
+      use_media_info: true
+      show_volume_level: true
+      media_controls:
+      - on_off
+      - play_pause_stop
+      volume_controls:
+      - volume_mute
+      - volume_set
+      card_mod:
+        style: ha-card{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);border-radius:18px;}
+    - type: custom:mushroom-media-player-card
+      entity: media_player.bedroom_tv
+      name: Bedroom TV
+      use_media_info: true
+      show_volume_level: true
+      media_controls:
+      - on_off
+      - play_pause_stop
+      volume_controls:
+      - volume_mute
+      - volume_set
+      card_mod:
+        style: ha-card{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);border-radius:18px;}
